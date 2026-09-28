@@ -65,7 +65,8 @@
           "fish_voice_search": "Find Fish Audio voice by language",
           "fish_voice_preview": "Listen to a test phrase",
           "fish_browser_preview": "Listen to voice in browser"
-        }
+        },
+        "description": "{provider_name} key saved: {llm_key_status}. Fish Audio key saved: {fish_key_status}. A check mark means the key is stored in Home Assistant."
       },
       "refresh_models": {
         "title": "Retry loading current models"
@@ -96,7 +97,7 @@
       },
       "connection": {
         "title": "Change API connection",
-        "description": "Leave the API key blank to keep the existing key.",
+        "description": "{provider_name} key saved: {key_status}. Leave the key field blank to keep the existing one.",
         "data": {
           "base_url": "Base URL",
           "api_key": "New API key (optional)"
@@ -104,7 +105,7 @@
       },
       "fish_audio": {
         "title": "Fish Audio speech",
-        "description": "Enter your Fish Audio key. Leave it blank to keep the saved key.",
+        "description": "Fish Audio key saved: {key_status}. Leave the key field blank to keep the existing one. Enable Load voices to browse the catalog for the language code.",
         "data": {
           "fish_api_key": "Fish Audio API key (optional)",
           "fish_model": "Speech model",
@@ -114,7 +115,8 @@
           "fish_language": "Language code (for example, ru)",
           "fish_temperature": "Expressiveness (0–1)",
           "fish_top_p": "Intonation variation (0–1)",
-          "fish_emotion": "Speaking style"
+          "fish_emotion": "Speaking style",
+          "fish_load_voices": "Load voices for selected language"
         }
       },
       "fish_voice_search": {
@@ -149,7 +151,7 @@
       },
       "fish_browser_ready": {
         "title": "Voice ready to play",
-        "description": "<a href=\"{preview_url}\" target=\"_blank\" rel=\"noopener\">▶ Open audio in browser</a>. The link lasts five minutes. Press Submit to save the selected voice."
+        "description": "[▶ Open audio in browser]({preview_url}). The link lasts five minutes. Press Submit to save the selected voice."
       }
     },
     "error": {

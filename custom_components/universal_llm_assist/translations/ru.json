@@ -65,7 +65,8 @@
           "fish_voice_search": "Найти голос Fish Audio по языку",
           "fish_voice_preview": "Прослушать тестовую фразу",
           "fish_browser_preview": "Прослушать голос в браузере"
-        }
+        },
+        "description": "Ключ {provider_name} сохранён: {llm_key_status}. Ключ Fish Audio сохранён: {fish_key_status}. Галочка означает, что ключ сохранён в Home Assistant."
       },
       "refresh_models": {
         "title": "Повторить загрузку моделей"
@@ -96,7 +97,7 @@
       },
       "connection": {
         "title": "Подключение к API",
-        "description": "Оставьте API-ключ пустым, чтобы сохранить прежний.",
+        "description": "Ключ {provider_name} сохранён: {key_status}. Оставьте поле ключа пустым, чтобы сохранить существующий.",
         "data": {
           "base_url": "Базовый URL",
           "api_key": "Новый API-ключ (необязательно)"
@@ -104,7 +105,7 @@
       },
       "fish_audio": {
         "title": "Озвучивание Fish Audio",
-        "description": "Введите ключ Fish Audio. Если ключ уже сохранён, оставьте поле пустым.",
+        "description": "Ключ Fish Audio сохранён: {key_status}. Оставьте поле ключа пустым, чтобы сохранить существующий. Включите «Считать голоса», чтобы открыть каталог для указанного языка.",
         "data": {
           "fish_api_key": "Ключ API Fish Audio (необязательно)",
           "fish_model": "Модель озвучивания",
@@ -114,7 +115,8 @@
           "fish_language": "Код языка (например, ru)",
           "fish_temperature": "Выразительность (0–1)",
           "fish_top_p": "Разнообразие интонаций (0–1)",
-          "fish_emotion": "Манера речи"
+          "fish_emotion": "Манера речи",
+          "fish_load_voices": "Считать голоса по выбранному языку"
         }
       },
       "fish_voice_search": {
@@ -149,7 +151,7 @@
       },
       "fish_browser_ready": {
         "title": "Голос готов к прослушиванию",
-        "description": "<a href=\"{preview_url}\" target=\"_blank\" rel=\"noopener\">▶ Открыть аудио в браузере</a>. Ссылка действует 5 минут. Нажмите «Отправить», чтобы сохранить выбранный голос."
+        "description": "[▶ Открыть аудио в браузере]({preview_url}). Ссылка действует 5 минут. Нажмите «Отправить», чтобы сохранить выбранный голос."
       }
     },
     "error": {

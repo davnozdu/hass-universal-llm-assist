@@ -247,6 +247,7 @@ class UniversalLLMAssistOptionsFlow(OptionsFlow):
         self._voices: list[dict[str, str]] = []
         self._voice_language = "ru"
         self._pending_voice: str | None = None
+        self._pending_fish_settings: dict[str, Any] = {}
         self._browser_preview_url: str | None = None
 
     @property
@@ -256,6 +257,7 @@ class UniversalLLMAssistOptionsFlow(OptionsFlow):
     async def async_step_init(
         self, user_input: dict[str, Any] | None = None
     ) -> ConfigFlowResult:
+        current = self._settings
         return self.async_show_menu(
             step_id="init",
             menu_options=[
@@ -264,6 +266,13 @@ class UniversalLLMAssistOptionsFlow(OptionsFlow):
                 "fish_voice_preview",
                 "fish_browser_preview",
             ],
+            description_placeholders={
+                "provider_name": PROVIDERS.get(
+                    current.get(CONF_PROVIDER), ("LLM", "", "")
+                )[0],
+                "llm_key_status": "✓" if current.get(CONF_API_KEY) else "—",
+                "fish_key_status": "✓" if current.get(CONF_FISH_API_KEY) else "—",
+            },
         )
 
     async def async_step_refresh_models(
@@ -344,12 +353,20 @@ class UniversalLLMAssistOptionsFlow(OptionsFlow):
                 }
             ),
             errors=errors,
+            description_placeholders={
+                "provider_name": PROVIDERS.get(
+                    self._settings.get(CONF_PROVIDER), ("LLM", "", "")
+                )[0],
+                "key_status": "✓" if self._settings.get(CONF_API_KEY) else "—"
+            },
         )
 
     async def async_step_fish_audio(
         self, user_input: dict[str, Any] | None = None
     ) -> ConfigFlowResult:
         """Configure optional Fish Audio TTS without displaying a saved key."""
+        errors: dict[str, str] = {}
+        current = self._settings
         if user_input is not None:
             changes = {
                 CONF_FISH_MODEL: user_input[CONF_FISH_MODEL].strip(),
@@ -363,10 +380,33 @@ class UniversalLLMAssistOptionsFlow(OptionsFlow):
             }
             if key := user_input.get(CONF_FISH_API_KEY, "").strip():
                 changes[CONF_FISH_API_KEY] = key
-            return self.async_create_entry(
-                title="", data={**self._entry.options, **changes}
-            )
-        current = self._settings
+            if user_input.get("fish_load_voices"):
+                lookup = {**current, **changes}
+                if not lookup.get(CONF_FISH_API_KEY):
+                    errors["base"] = "fish_key_required"
+                else:
+                    try:
+                        self._voices = await fetch_voices(
+                            self.hass,
+                            lookup[CONF_FISH_API_KEY],
+                            changes[CONF_FISH_LANGUAGE],
+                            "",
+                            1,
+                        )
+                    except HomeAssistantError:
+                        errors["base"] = "cannot_load_voices"
+                    else:
+                        if not self._voices:
+                            errors["base"] = "no_voices"
+                        else:
+                            self._pending_fish_settings = changes
+                            self._voice_language = changes[CONF_FISH_LANGUAGE]
+                            return await self.async_step_fish_voice_results()
+            else:
+                return self.async_create_entry(
+                    title="", data={**self._entry.options, **changes}
+                )
+            current = {**current, **changes}
         return self.async_show_form(
             step_id="fish_audio",
             data_schema=vol.Schema(
@@ -398,6 +438,10 @@ class UniversalLLMAssistOptionsFlow(OptionsFlow):
                         CONF_FISH_LANGUAGE,
                         default=current.get(CONF_FISH_LANGUAGE, "ru"),
                     ): TextSelector(TextSelectorConfig(type=TextSelectorType.TEXT)),
+                    vol.Required(
+                        "fish_load_voices",
+                        default=(user_input or {}).get("fish_load_voices", False),
+                    ): BooleanSelector(),
                     vol.Required(
                         CONF_FISH_SPEED,
                         default=current.get(CONF_FISH_SPEED, 1.0),
@@ -449,6 +493,10 @@ class UniversalLLMAssistOptionsFlow(OptionsFlow):
                     ),
                 }
             ),
+            errors=errors,
+            description_placeholders={
+                "key_status": "✓" if self._settings.get(CONF_FISH_API_KEY) else "—"
+            },
         )
 
     async def async_step_fish_voice_search(
@@ -540,7 +588,7 @@ class UniversalLLMAssistOptionsFlow(OptionsFlow):
         """Generate an MP3 for browser playback before saving a voice."""
         errors: dict[str, str] = {}
         if user_input is not None:
-            settings = self._settings
+            settings = {**self._settings, **self._pending_fish_settings}
             if not settings.get(CONF_FISH_API_KEY):
                 errors["base"] = "fish_key_required"
             else:
@@ -580,7 +628,8 @@ class UniversalLLMAssistOptionsFlow(OptionsFlow):
                     CONF_FISH_LANGUAGE: self._voice_language,
                 }
             return self.async_create_entry(
-                title="", data={**self._entry.options, **changes}
+                title="",
+                data={**self._entry.options, **self._pending_fish_settings, **changes},
             )
         return self.async_show_form(
             step_id="fish_browser_ready",
