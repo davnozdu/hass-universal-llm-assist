@@ -11,6 +11,9 @@ from homeassistant.core import callback
 from homeassistant.exceptions import HomeAssistantError
 from homeassistant.helpers.selector import (
     BooleanSelector,
+    NumberSelector,
+    NumberSelectorConfig,
+    NumberSelectorMode,
     SelectOptionDict,
     SelectSelector,
     SelectSelectorConfig,
@@ -22,9 +25,19 @@ from homeassistant.helpers.selector import (
 from .client import fetch_models
 from .const import (
     CONF_BASE_URL,
+    CONF_AUTO_UPDATE,
     CONF_CONTROL,
+    CONF_FISH_API_KEY,
+    CONF_FISH_LATENCY,
+    CONF_FISH_MODEL,
+    CONF_FISH_SPEED,
+    CONF_FISH_VOICE,
+    CONF_MAX_TOKENS,
     CONF_MODEL,
     CONF_PROVIDER,
+    CONF_TEMPERATURE,
+    CONF_THINK,
+    DEFAULT_MAX_TOKENS,
     DEFAULT_PROMPT,
     DOMAIN,
     PROVIDERS,
@@ -49,6 +62,31 @@ def _settings_schema(model_selector, current: dict[str, Any]) -> vol.Schema:
             vol.Required(
                 CONF_PROMPT, default=current.get(CONF_PROMPT, DEFAULT_PROMPT)
             ): TextSelector(TextSelectorConfig(multiline=True)),
+            vol.Required(
+                CONF_THINK, default=current.get(CONF_THINK, False)
+            ): BooleanSelector(),
+            vol.Required(
+                CONF_TEMPERATURE,
+                default=current.get(
+                    CONF_TEMPERATURE,
+                    1.0 if current.get(CONF_PROVIDER) == "gemini" else 0.7,
+                ),
+            ): NumberSelector(
+                NumberSelectorConfig(
+                    min=0, max=2, step=0.1, mode=NumberSelectorMode.BOX
+                )
+            ),
+            vol.Required(
+                CONF_MAX_TOKENS,
+                default=current.get(CONF_MAX_TOKENS, DEFAULT_MAX_TOKENS),
+            ): NumberSelector(
+                NumberSelectorConfig(
+                    min=64, max=8192, step=1, mode=NumberSelectorMode.BOX
+                )
+            ),
+            vol.Required(
+                CONF_AUTO_UPDATE, default=current.get(CONF_AUTO_UPDATE, False)
+            ): BooleanSelector(),
         }
     )
 
@@ -151,7 +189,10 @@ class UniversalLLMAssistConfigFlow(ConfigFlow, domain=DOMAIN):
     ) -> ConfigFlowResult:
         if user_input is not None:
             return self._finish(user_input)
-        default = {CONF_MODEL: PROVIDERS[self._connection[CONF_PROVIDER]][2]}
+        default = {
+            CONF_MODEL: PROVIDERS[self._connection[CONF_PROVIDER]][2],
+            CONF_PROVIDER: self._connection[CONF_PROVIDER],
+        }
         return self.async_show_form(
             step_id="models", data_schema=_catalog_schema(self._models, default)
         )
@@ -167,7 +208,10 @@ class UniversalLLMAssistConfigFlow(ConfigFlow, domain=DOMAIN):
                 data_schema=_manual_schema(user_input),
                 errors={CONF_MODEL: "required"},
             )
-        default = {CONF_MODEL: PROVIDERS[self._connection[CONF_PROVIDER]][2]}
+        default = {
+            CONF_MODEL: PROVIDERS[self._connection[CONF_PROVIDER]][2],
+            CONF_PROVIDER: self._connection[CONF_PROVIDER],
+        }
         return self.async_show_form(
             step_id="manual_model", data_schema=_manual_schema(default)
         )
@@ -200,7 +244,7 @@ class UniversalLLMAssistOptionsFlow(OptionsFlow):
     ) -> ConfigFlowResult:
         return self.async_show_menu(
             step_id="init",
-            menu_options=["refresh_models", "manual_model", "connection"],
+            menu_options=["refresh_models", "manual_model", "connection", "fish_audio"],
         )
 
     async def async_step_refresh_models(
@@ -281,4 +325,71 @@ class UniversalLLMAssistOptionsFlow(OptionsFlow):
                 }
             ),
             errors=errors,
+        )
+
+    async def async_step_fish_audio(
+        self, user_input: dict[str, Any] | None = None
+    ) -> ConfigFlowResult:
+        """Configure optional Fish Audio TTS without displaying a saved key."""
+        if user_input is not None:
+            changes = {
+                CONF_FISH_MODEL: user_input[CONF_FISH_MODEL].strip(),
+                CONF_FISH_VOICE: user_input.get(CONF_FISH_VOICE, "").strip(),
+                CONF_FISH_SPEED: user_input[CONF_FISH_SPEED],
+                CONF_FISH_LATENCY: user_input[CONF_FISH_LATENCY],
+            }
+            if key := user_input.get(CONF_FISH_API_KEY, "").strip():
+                changes[CONF_FISH_API_KEY] = key
+            return self.async_create_entry(
+                title="", data={**self._entry.options, **changes}
+            )
+        current = self._settings
+        return self.async_show_form(
+            step_id="fish_audio",
+            data_schema=vol.Schema(
+                {
+                    vol.Optional(CONF_FISH_API_KEY): TextSelector(
+                        TextSelectorConfig(type=TextSelectorType.PASSWORD)
+                    ),
+                    vol.Required(
+                        CONF_FISH_MODEL,
+                        default=current.get(CONF_FISH_MODEL, "s2.1-pro-free"),
+                    ): SelectSelector(
+                        SelectSelectorConfig(
+                            options=[
+                                SelectOptionDict(label=name, value=name)
+                                for name in (
+                                    "s2.1-pro-free",
+                                    "s2.1-pro",
+                                    "s2-pro",
+                                    "s1",
+                                )
+                            ]
+                        )
+                    ),
+                    vol.Optional(
+                        CONF_FISH_VOICE,
+                        default=current.get(CONF_FISH_VOICE, ""),
+                    ): TextSelector(TextSelectorConfig(type=TextSelectorType.TEXT)),
+                    vol.Required(
+                        CONF_FISH_SPEED,
+                        default=current.get(CONF_FISH_SPEED, 1.0),
+                    ): NumberSelector(
+                        NumberSelectorConfig(
+                            min=0.5, max=2.0, step=0.1, mode=NumberSelectorMode.BOX
+                        )
+                    ),
+                    vol.Required(
+                        CONF_FISH_LATENCY,
+                        default=current.get(CONF_FISH_LATENCY, "balanced"),
+                    ): SelectSelector(
+                        SelectSelectorConfig(
+                            options=[
+                                SelectOptionDict(label=value, value=value)
+                                for value in ("low", "balanced", "normal")
+                            ]
+                        )
+                    ),
+                }
+            ),
         )

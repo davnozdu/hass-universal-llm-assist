@@ -11,7 +11,18 @@ from homeassistant.helpers import llm
 from homeassistant.exceptions import HomeAssistantError
 
 from .client import assistant_content, completion_messages, completion_tools, request_completion
-from .const import CONF_BASE_URL, CONF_CONTROL, CONF_MODEL, DEFAULT_PROMPT, DOMAIN
+from .const import (
+    CONF_BASE_URL,
+    CONF_CONTROL,
+    CONF_MAX_TOKENS,
+    CONF_MODEL,
+    CONF_PROVIDER,
+    CONF_TEMPERATURE,
+    CONF_THINK,
+    DEFAULT_MAX_TOKENS,
+    DEFAULT_PROMPT,
+    DOMAIN,
+)
 
 MAX_TOOL_ITERATIONS = 8
 
@@ -68,11 +79,18 @@ class UniversalLLMConversation(
         for _ in range(MAX_TOOL_ITERATIONS):
             message = await request_completion(
                 self.hass,
+                settings[CONF_PROVIDER],
                 settings[CONF_BASE_URL],
                 settings[CONF_API_KEY],
                 settings[CONF_MODEL],
                 completion_messages(chat_log),
                 completion_tools(chat_log),
+                thinking=settings.get(CONF_THINK, False),
+                temperature=settings.get(
+                    CONF_TEMPERATURE,
+                    1.0 if settings[CONF_PROVIDER] == "gemini" else 0.7,
+                ),
+                max_tokens=settings.get(CONF_MAX_TOKENS, DEFAULT_MAX_TOKENS),
             )
             content = assistant_content(self.entity_id, message)
             async for _ in chat_log.async_add_assistant_content(content):

@@ -1,6 +1,6 @@
 # Universal LLM Assist
 
-Custom Home Assistant conversation integration for **Ollama Cloud, DeepSeek, Groq, Gemini**, and other OpenAI-compatible Chat Completions APIs. It receives text from an existing Assist voice pipeline, lets the model call Home Assistant's built-in Assist tools, and sends a short answer back to the pipeline. Speech recognition and speech synthesis remain configured in Home Assistant.
+Custom Home Assistant conversation integration for **Ollama Cloud, DeepSeek, Groq, Gemini**, and other OpenAI-compatible Chat Completions APIs. It receives text from an existing Assist voice pipeline, lets the model call Home Assistant's built-in Assist tools, and sends a short answer back to the pipeline. Optional **Fish Audio** text-to-speech generates the spoken answer; speech recognition remains configured separately in Home Assistant.
 
 ## Requirements
 
@@ -23,11 +23,24 @@ Download `universal_llm_assist.zip` from a release and extract it into your Home
 1. Open **Settings → Devices & services → Add integration → Universal LLM Assist**.
 2. Select Ollama Cloud, DeepSeek, Groq, or Gemini and paste the corresponding API key. The official API URL is filled in automatically; you can override it.
 3. Press **Считать актуальные модели / Load current models** to fetch the live catalog and select a model. The manual entry path is available if a provider does not expose a model catalog.
-4. Keep **Allow Home Assistant control** on to allow the model to use the built-in Assist API. Adjust the prompt if desired.
+4. Keep **Allow Home Assistant control** on to allow the model to use the built-in Assist API. Adjust the prompt, thinking switch, temperature, and maximum output tokens as desired. Thinking is off by default. Providers that do not support the switch ignore it.
 5. Open **Settings → Voice assistants**, edit your Assist pipeline, and choose the new conversation agent. Your existing speech-to-text engine can stay as it is.
 6. In **Settings → Voice assistants → Expose**, expose the entities and scripts this agent should control. Give scripts clear names and descriptions so the model knows when to run them.
 
 Open the integration's settings later to refresh the model catalog, change the model and prompt, or replace the key.
+
+### Fish Audio speech
+
+1. Open this integration's **Configure** menu and choose **Configure Fish Audio speech**.
+2. Enter your [Fish Audio API key](https://fish.audio/app/api-keys). The default model is `s2.1-pro-free`. A voice model ID is optional; without one, Fish Audio uses its default voice.
+3. Set speech speed and latency as desired. **Balanced** is the default latency setting.
+4. Save, then select **Fish Audio** as the text-to-speech engine in the Assist pipeline. Your LLM conversation agent and speech-to-text engine remain separate selections.
+
+The Fish Audio key is saved only in the Home Assistant config entry. The integration sends the final assistant reply to Fish Audio and returns an MP3 to Home Assistant. Fish Audio's free model is intended for testing and has no latency guarantee; see the [official model overview](https://docs.fish.audio/overview/capabilities).
+
+### Updates
+
+The integration creates a **Universal LLM Assist** update entity. It checks GitHub releases every six hours. Install a new version from Home Assistant's update panel, or enable **Install new releases automatically** in the model settings to download and install updates as they appear. Installation keeps a backup of the previous component directory and restarts Home Assistant. Existing v0.1.0 manual installations need one manual upgrade to v0.2.0 before this update entity becomes available.
 
 **Ollama Cloud:** Use an [Ollama API key](https://ollama.com/settings/keys), not a local Ollama sign-in. The integration connects directly to `https://ollama.com/v1`. For this API, model names are those returned by the cloud API, for example `gemma4:31b`; CLI names ending in `:cloud` are different.
 

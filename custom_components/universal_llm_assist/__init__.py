@@ -9,14 +9,18 @@ from .const import DOMAIN
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Set up the conversation agent."""
-    await hass.config_entries.async_forward_entry_setups(entry, [Platform.CONVERSATION])
+    await hass.config_entries.async_forward_entry_setups(
+        entry, [Platform.CONVERSATION, Platform.TTS, Platform.UPDATE]
+    )
     entry.async_on_unload(entry.add_update_listener(async_update_options))
     return True
 
 
 async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Unload the conversation agent."""
-    return await hass.config_entries.async_unload_platforms(entry, [Platform.CONVERSATION])
+    return await hass.config_entries.async_unload_platforms(
+        entry, [Platform.CONVERSATION, Platform.TTS, Platform.UPDATE]
+    )
 
 
 async def async_update_options(hass: HomeAssistant, entry: ConfigEntry) -> None:

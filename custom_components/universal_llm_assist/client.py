@@ -110,16 +110,22 @@ def completion_tools(chat_log: conversation.ChatLog) -> list[dict[str, Any]]:
 
 async def request_completion(
     hass,
+    provider: str,
     base_url: str,
     api_key: str,
     model: str,
     messages: list[dict[str, Any]],
     tools: list[dict[str, Any]] | None = None,
+    *,
+    thinking: bool = False,
+    temperature: float = 0.7,
+    max_tokens: int = 1024,
 ) -> dict[str, Any]:
     """Request one nonstreaming completion from the configured provider."""
     payload: dict[str, Any] = {"model": model, "messages": messages, "stream": False}
     if tools:
         payload["tools"] = tools
+    payload.update(_generation_options(provider, model, thinking, temperature, max_tokens))
     headers = {"Authorization": f"Bearer {api_key}"}
     session = async_get_clientsession(hass)
     try:
@@ -141,12 +147,47 @@ async def request_completion(
     except (ValueError, TypeError) as err:
         raise HomeAssistantError("Invalid JSON response from LLM provider") from err
     try:
-        message = result["choices"][0]["message"]
+        choice = result["choices"][0]
+        if choice.get("finish_reason") == "length":
+            raise HomeAssistantError(
+                "The model reached the output token limit. Increase it in integration settings."
+            )
+        message = choice["message"]
         if not isinstance(message, dict):
             raise TypeError
         return message
     except (KeyError, IndexError, TypeError) as err:
         raise HomeAssistantError("LLM provider returned no assistant message") from err
+
+
+def _generation_options(
+    provider: str,
+    model: str,
+    thinking: bool,
+    temperature: float,
+    max_tokens: int,
+) -> dict[str, Any]:
+    """Map common controls to each provider's supported request fields."""
+    options: dict[str, Any] = {
+        "max_completion_tokens" if provider == "groq" else "max_tokens": max_tokens
+    }
+    if not (provider == "deepseek" and thinking):
+        options["temperature"] = temperature
+
+    if provider == "ollama_cloud":
+        if not thinking:
+            options["reasoning_effort"] = "none"
+    elif provider == "deepseek":
+        options["thinking"] = {"type": "enabled" if thinking else "disabled"}
+    elif provider == "groq" and "qwen3" in model.lower():
+        options["reasoning_effort"] = "default" if thinking else "none"
+    elif (
+        provider == "gemini"
+        and model.lower().startswith("gemini-2.5-flash")
+        and not thinking
+    ):
+        options["reasoning_effort"] = "none"
+    return options
 
 
 def assistant_content(entity_id: str, message: dict[str, Any]) -> conversation.AssistantContent:

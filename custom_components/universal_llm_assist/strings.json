@@ -19,13 +19,19 @@
           "manual_model": "Enter model manually"
         }
       },
-      "refresh_models": {"title": "Retry loading current models"},
+      "refresh_models": {
+        "title": "Retry loading current models"
+      },
       "models": {
         "title": "Choose a current model",
         "data": {
           "model": "Model",
           "control_home_assistant": "Allow Home Assistant control",
-          "prompt": "Assistant instructions"
+          "prompt": "Assistant instructions",
+          "thinking_mode": "Enable thinking (supported models)",
+          "temperature": "Temperature (0–2)",
+          "max_output_tokens": "Maximum output tokens",
+          "auto_update": "Install new releases automatically"
         }
       },
       "manual_model": {
@@ -33,7 +39,11 @@
         "data": {
           "model": "Model ID",
           "control_home_assistant": "Allow Home Assistant control",
-          "prompt": "Assistant instructions"
+          "prompt": "Assistant instructions",
+          "thinking_mode": "Enable thinking (supported models)",
+          "temperature": "Temperature (0–2)",
+          "max_output_tokens": "Maximum output tokens",
+          "auto_update": "Install new releases automatically"
         }
       }
     },
@@ -50,16 +60,23 @@
         "menu_options": {
           "refresh_models": "Load current models",
           "manual_model": "Change model manually",
-          "connection": "Change API key or URL"
+          "connection": "Change API key or URL",
+          "fish_audio": "Configure Fish Audio speech"
         }
       },
-      "refresh_models": {"title": "Retry loading current models"},
+      "refresh_models": {
+        "title": "Retry loading current models"
+      },
       "models": {
         "title": "Choose a current model",
         "data": {
           "model": "Model",
           "control_home_assistant": "Allow Home Assistant control",
-          "prompt": "Assistant instructions"
+          "prompt": "Assistant instructions",
+          "thinking_mode": "Enable thinking (supported models)",
+          "temperature": "Temperature (0–2)",
+          "max_output_tokens": "Maximum output tokens",
+          "auto_update": "Install new releases automatically"
         }
       },
       "manual_model": {
@@ -67,13 +84,31 @@
         "data": {
           "model": "Model ID",
           "control_home_assistant": "Allow Home Assistant control",
-          "prompt": "Assistant instructions"
+          "prompt": "Assistant instructions",
+          "thinking_mode": "Enable thinking (supported models)",
+          "temperature": "Temperature (0–2)",
+          "max_output_tokens": "Maximum output tokens",
+          "auto_update": "Install new releases automatically"
         }
       },
       "connection": {
         "title": "Change API connection",
         "description": "Leave the API key blank to keep the existing key.",
-        "data": {"base_url": "Base URL", "api_key": "New API key (optional)"}
+        "data": {
+          "base_url": "Base URL",
+          "api_key": "New API key (optional)"
+        }
+      },
+      "fish_audio": {
+        "title": "Fish Audio speech",
+        "description": "Enter your Fish Audio key. Leave it blank to keep the saved key.",
+        "data": {
+          "fish_api_key": "Fish Audio API key (optional)",
+          "fish_model": "Speech model",
+          "fish_voice": "Voice model ID (optional)",
+          "fish_speed": "Speech speed",
+          "fish_latency": "Latency / quality"
+        }
       }
     },
     "error": {

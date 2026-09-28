@@ -5,23 +5,116 @@
       "user": {
         "title": "Connect an LLM provider",
         "description": "Choose a provider and enter its API key. Leave the URL empty to use the official endpoint.",
-        "data": {"provider": "Provider", "name": "Assistant name", "api_key": "API key", "base_url": "Custom base URL (optional)"}
+        "data": {
+          "provider": "Provider",
+          "name": "Assistant name",
+          "api_key": "API key",
+          "base_url": "Custom base URL (optional)"
+        }
       },
-      "model_menu": {"title": "Choose a model", "menu_options": {"refresh_models": "Load current models", "manual_model": "Enter model manually"}},
-      "refresh_models": {"title": "Retry loading current models"},
-      "models": {"title": "Choose a current model", "data": {"model": "Model", "control_home_assistant": "Allow Home Assistant control", "prompt": "Assistant instructions"}},
-      "manual_model": {"title": "Enter model manually", "data": {"model": "Model ID", "control_home_assistant": "Allow Home Assistant control", "prompt": "Assistant instructions"}}
+      "model_menu": {
+        "title": "Choose a model",
+        "menu_options": {
+          "refresh_models": "Load current models",
+          "manual_model": "Enter model manually"
+        }
+      },
+      "refresh_models": {
+        "title": "Retry loading current models"
+      },
+      "models": {
+        "title": "Choose a current model",
+        "data": {
+          "model": "Model",
+          "control_home_assistant": "Allow Home Assistant control",
+          "prompt": "Assistant instructions",
+          "thinking_mode": "Enable thinking (supported models)",
+          "temperature": "Temperature (0–2)",
+          "max_output_tokens": "Maximum output tokens",
+          "auto_update": "Install new releases automatically"
+        }
+      },
+      "manual_model": {
+        "title": "Enter model manually",
+        "data": {
+          "model": "Model ID",
+          "control_home_assistant": "Allow Home Assistant control",
+          "prompt": "Assistant instructions",
+          "thinking_mode": "Enable thinking (supported models)",
+          "temperature": "Temperature (0–2)",
+          "max_output_tokens": "Maximum output tokens",
+          "auto_update": "Install new releases automatically"
+        }
+      }
     },
-    "error": {"invalid_url": "Enter a valid HTTP or HTTPS URL.", "required": "This field is required.", "cannot_load_models": "Could not load models. Check the key and URL, then retry or enter a model manually."}
+    "error": {
+      "invalid_url": "Enter a valid HTTP or HTTPS URL.",
+      "required": "This field is required.",
+      "cannot_load_models": "Could not load models. Check the key and URL, then retry or enter a model manually."
+    }
   },
   "options": {
     "step": {
-      "init": {"title": "Universal LLM Assist settings", "menu_options": {"refresh_models": "Load current models", "manual_model": "Change model manually", "connection": "Change API key or URL"}},
-      "refresh_models": {"title": "Retry loading current models"},
-      "models": {"title": "Choose a current model", "data": {"model": "Model", "control_home_assistant": "Allow Home Assistant control", "prompt": "Assistant instructions"}},
-      "manual_model": {"title": "Change model manually", "data": {"model": "Model ID", "control_home_assistant": "Allow Home Assistant control", "prompt": "Assistant instructions"}},
-      "connection": {"title": "Change API connection", "description": "Leave the API key blank to keep the existing key.", "data": {"base_url": "Base URL", "api_key": "New API key (optional)"}}
+      "init": {
+        "title": "Universal LLM Assist settings",
+        "menu_options": {
+          "refresh_models": "Load current models",
+          "manual_model": "Change model manually",
+          "connection": "Change API key or URL",
+          "fish_audio": "Configure Fish Audio speech"
+        }
+      },
+      "refresh_models": {
+        "title": "Retry loading current models"
+      },
+      "models": {
+        "title": "Choose a current model",
+        "data": {
+          "model": "Model",
+          "control_home_assistant": "Allow Home Assistant control",
+          "prompt": "Assistant instructions",
+          "thinking_mode": "Enable thinking (supported models)",
+          "temperature": "Temperature (0–2)",
+          "max_output_tokens": "Maximum output tokens",
+          "auto_update": "Install new releases automatically"
+        }
+      },
+      "manual_model": {
+        "title": "Change model manually",
+        "data": {
+          "model": "Model ID",
+          "control_home_assistant": "Allow Home Assistant control",
+          "prompt": "Assistant instructions",
+          "thinking_mode": "Enable thinking (supported models)",
+          "temperature": "Temperature (0–2)",
+          "max_output_tokens": "Maximum output tokens",
+          "auto_update": "Install new releases automatically"
+        }
+      },
+      "connection": {
+        "title": "Change API connection",
+        "description": "Leave the API key blank to keep the existing key.",
+        "data": {
+          "base_url": "Base URL",
+          "api_key": "New API key (optional)"
+        }
+      },
+      "fish_audio": {
+        "title": "Fish Audio speech",
+        "description": "Enter your Fish Audio key. Leave it blank to keep the saved key.",
+        "data": {
+          "fish_api_key": "Fish Audio API key (optional)",
+          "fish_model": "Speech model",
+          "fish_voice": "Voice model ID (optional)",
+          "fish_speed": "Speech speed",
+          "fish_latency": "Latency / quality"
+        }
+      }
     },
-    "error": {"invalid_url": "Enter a valid HTTP or HTTPS URL.", "required": "This field is required.", "cannot_load_models": "Could not load models. Check the key and URL, then retry or enter a model manually."}
+    "error": {
+      "invalid_url": "Enter a valid HTTP or HTTPS URL.",
+      "required": "This field is required.",
+      "cannot_load_models": "Could not load models. Check the key and URL, then retry or enter a model manually."
+    }
   }
 }

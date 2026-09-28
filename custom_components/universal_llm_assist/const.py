@@ -1,11 +1,23 @@
 """Constants for Universal LLM Assist."""
 
 DOMAIN = "universal_llm_assist"
+VERSION = "0.2.0"
 
 CONF_PROVIDER = "provider"
 CONF_BASE_URL = "base_url"
 CONF_MODEL = "model"
 CONF_CONTROL = "control_home_assistant"
+CONF_THINK = "thinking_mode"
+CONF_TEMPERATURE = "temperature"
+CONF_MAX_TOKENS = "max_output_tokens"
+CONF_AUTO_UPDATE = "auto_update"
+CONF_FISH_API_KEY = "fish_api_key"
+CONF_FISH_MODEL = "fish_model"
+CONF_FISH_VOICE = "fish_voice"
+CONF_FISH_SPEED = "fish_speed"
+CONF_FISH_LATENCY = "fish_latency"
+
+DEFAULT_MAX_TOKENS = 1024
 
 PROVIDERS = {
     "ollama_cloud": ("Ollama Cloud", "https://ollama.com/v1", "gemma4:31b"),
