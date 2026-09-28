@@ -61,7 +61,10 @@
           "refresh_models": "Считать актуальные модели",
           "manual_model": "Изменить модель вручную",
           "connection": "Изменить ключ или URL",
-          "fish_audio": "Настроить Fish Audio (озвучивание)"
+          "fish_audio": "Настроить Fish Audio (озвучивание)",
+          "fish_voice_search": "Найти голос Fish Audio по языку",
+          "fish_voice_preview": "Прослушать тестовую фразу",
+          "fish_browser_preview": "Прослушать голос в браузере"
         }
       },
       "refresh_models": {
@@ -107,14 +110,60 @@
           "fish_model": "Модель озвучивания",
           "fish_voice": "ID голоса (необязательно)",
           "fish_speed": "Скорость речи",
-          "fish_latency": "Задержка / качество"
+          "fish_latency": "Задержка / качество",
+          "fish_language": "Код языка (например, ru)",
+          "fish_temperature": "Выразительность (0–1)",
+          "fish_top_p": "Разнообразие интонаций (0–1)",
+          "fish_emotion": "Манера речи"
         }
+      },
+      "fish_voice_search": {
+        "title": "Поиск голосов Fish Audio",
+        "description": "Сначала сохраните ключ Fish Audio. Поиск использует код языка; можно сузить результаты по названию.",
+        "data": {
+          "fish_language": "Код языка",
+          "fish_voice_title": "Название голоса (необязательно)",
+          "fish_voice_page": "Страница результатов"
+        }
+      },
+      "fish_voice_results": {
+        "title": "Выберите голос",
+        "data": {
+          "fish_voice": "Голос"
+        }
+      },
+      "fish_voice_preview": {
+        "title": "Тест голоса Fish Audio",
+        "description": "Выберите колонку и фразу. Будут использованы сохранённые голос и параметры Fish Audio.",
+        "data": {
+          "media_player": "Медиаплеер",
+          "test_text": "Тестовая фраза"
+        }
+      },
+      "fish_browser_preview": {
+        "title": "Предпросмотр голоса в браузере",
+        "description": "Введите короткую фразу. Аудио создаётся с выбранным или сохранённым голосом Fish Audio.",
+        "data": {
+          "test_text": "Тестовая фраза"
+        }
+      },
+      "fish_browser_ready": {
+        "title": "Голос готов к прослушиванию",
+        "description": "<a href=\"{preview_url}\" target=\"_blank\" rel=\"noopener\">▶ Открыть аудио в браузере</a>. Ссылка действует 5 минут. Нажмите «Отправить», чтобы сохранить выбранный голос."
       }
     },
     "error": {
       "invalid_url": "Введите корректный HTTP или HTTPS URL.",
       "required": "Обязательное поле.",
-      "cannot_load_models": "Не удалось получить модели. Проверьте ключ и URL, затем повторите попытку или введите модель вручную."
+      "cannot_load_models": "Не удалось получить модели. Проверьте ключ и URL, затем повторите попытку или введите модель вручную.",
+      "fish_key_required": "Сначала настройте ключ Fish Audio.",
+      "cannot_load_voices": "Не удалось загрузить голоса Fish Audio. Проверьте ключ и повторите попытку.",
+      "no_voices": "Голоса не найдены. Измените язык, название или страницу.",
+      "fish_tts_required": "Сначала сохраните ключ Fish Audio и дождитесь появления TTS-сущности.",
+      "preview_failed": "Не удалось воспроизвести тестовую фразу. Проверьте Fish Audio и медиаплеер."
+    },
+    "abort": {
+      "invalid_voice": "Неверный голос."
     }
   }
 }

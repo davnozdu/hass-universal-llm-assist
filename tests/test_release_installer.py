@@ -21,7 +21,7 @@ spec.loader.exec_module(installer)
 PREFIX = "custom_components/universal_llm_assist/"
 
 
-def make_archive(extra: dict[str, bytes] | None = None, version: str = "0.2.0") -> bytes:
+def make_archive(extra: dict[str, bytes] | None = None, version: str = "0.2.1") -> bytes:
     files = {
         PREFIX + "manifest.json": json.dumps(
             {"domain": "universal_llm_assist", "version": version}
@@ -42,7 +42,7 @@ class ReleaseInstallerTests(unittest.TestCase):
             target = Path(directory) / "universal_llm_assist"
             target.mkdir()
             (target / "old.txt").write_text("old")
-            backup = installer.install_archive(make_archive(), "0.2.0", target)
+            backup = installer.install_archive(make_archive(), "0.2.1", target)
             self.assertEqual((target / "__init__.py").read_text(), "VALUE = 2\n")
             self.assertEqual((backup / "old.txt").read_text(), "old")
 
@@ -53,7 +53,7 @@ class ReleaseInstallerTests(unittest.TestCase):
             (target / "old.txt").write_text("old")
             archive = make_archive({PREFIX + "../../escape.txt": b"bad"})
             with self.assertRaises(installer.InstallError):
-                installer.install_archive(archive, "0.2.0", target)
+                installer.install_archive(archive, "0.2.1", target)
             self.assertEqual((target / "old.txt").read_text(), "old")
             self.assertFalse((Path(directory) / "escape.txt").exists())
 
@@ -62,4 +62,4 @@ class ReleaseInstallerTests(unittest.TestCase):
             target = Path(directory) / "universal_llm_assist"
             target.mkdir()
             with self.assertRaises(installer.InstallError):
-                installer.install_archive(make_archive(version="0.1.0"), "0.2.0", target)
+                installer.install_archive(make_archive(version="0.1.0"), "0.2.1", target)

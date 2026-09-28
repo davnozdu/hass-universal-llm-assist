@@ -61,7 +61,10 @@
           "refresh_models": "Load current models",
           "manual_model": "Change model manually",
           "connection": "Change API key or URL",
-          "fish_audio": "Configure Fish Audio speech"
+          "fish_audio": "Configure Fish Audio speech",
+          "fish_voice_search": "Find Fish Audio voice by language",
+          "fish_voice_preview": "Listen to a test phrase",
+          "fish_browser_preview": "Listen to voice in browser"
         }
       },
       "refresh_models": {
@@ -107,14 +110,60 @@
           "fish_model": "Speech model",
           "fish_voice": "Voice model ID (optional)",
           "fish_speed": "Speech speed",
-          "fish_latency": "Latency / quality"
+          "fish_latency": "Latency / quality",
+          "fish_language": "Language code (for example, ru)",
+          "fish_temperature": "Expressiveness (0–1)",
+          "fish_top_p": "Intonation variation (0–1)",
+          "fish_emotion": "Speaking style"
         }
+      },
+      "fish_voice_search": {
+        "title": "Search Fish Audio voices",
+        "description": "Save a Fish Audio key first. Search by language code and optionally narrow results by name.",
+        "data": {
+          "fish_language": "Language code",
+          "fish_voice_title": "Voice name (optional)",
+          "fish_voice_page": "Result page"
+        }
+      },
+      "fish_voice_results": {
+        "title": "Choose a voice",
+        "data": {
+          "fish_voice": "Voice"
+        }
+      },
+      "fish_voice_preview": {
+        "title": "Test Fish Audio voice",
+        "description": "Choose a player and phrase. The saved Fish Audio voice and settings will be used.",
+        "data": {
+          "media_player": "Media player",
+          "test_text": "Test phrase"
+        }
+      },
+      "fish_browser_preview": {
+        "title": "Browser voice preview",
+        "description": "Enter a short phrase. Audio uses the selected or saved Fish Audio voice.",
+        "data": {
+          "test_text": "Test phrase"
+        }
+      },
+      "fish_browser_ready": {
+        "title": "Voice ready to play",
+        "description": "<a href=\"{preview_url}\" target=\"_blank\" rel=\"noopener\">▶ Open audio in browser</a>. The link lasts five minutes. Press Submit to save the selected voice."
       }
     },
     "error": {
       "invalid_url": "Enter a valid HTTP or HTTPS URL.",
       "required": "This field is required.",
-      "cannot_load_models": "Could not load models. Check the key and URL, then retry or enter a model manually."
+      "cannot_load_models": "Could not load models. Check the key and URL, then retry or enter a model manually.",
+      "fish_key_required": "Configure a Fish Audio key first.",
+      "cannot_load_voices": "Could not load Fish Audio voices. Check the key and try again.",
+      "no_voices": "No voices found. Change the language, name, or page.",
+      "fish_tts_required": "Save a Fish Audio key first and wait for the TTS entity to appear.",
+      "preview_failed": "Could not play the test phrase. Check Fish Audio and the media player."
+    },
+    "abort": {
+      "invalid_voice": "Invalid voice."
     }
   }
 }

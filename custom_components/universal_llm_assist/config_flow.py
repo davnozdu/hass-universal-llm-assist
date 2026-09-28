@@ -9,8 +9,11 @@ from homeassistant.config_entries import ConfigEntry, ConfigFlow, ConfigFlowResu
 from homeassistant.const import CONF_API_KEY, CONF_NAME, CONF_PROMPT
 from homeassistant.core import callback
 from homeassistant.exceptions import HomeAssistantError
+from homeassistant.helpers import entity_registry as er
 from homeassistant.helpers.selector import (
     BooleanSelector,
+    EntitySelector,
+    EntitySelectorConfig,
     NumberSelector,
     NumberSelectorConfig,
     NumberSelectorMode,
@@ -28,9 +31,13 @@ from .const import (
     CONF_AUTO_UPDATE,
     CONF_CONTROL,
     CONF_FISH_API_KEY,
+    CONF_FISH_EMOTION,
     CONF_FISH_LATENCY,
+    CONF_FISH_LANGUAGE,
     CONF_FISH_MODEL,
     CONF_FISH_SPEED,
+    CONF_FISH_TEMPERATURE,
+    CONF_FISH_TOP_P,
     CONF_FISH_VOICE,
     CONF_MAX_TOKENS,
     CONF_MODEL,
@@ -42,6 +49,9 @@ from .const import (
     DOMAIN,
     PROVIDERS,
 )
+from .fish import fetch_voices
+from .preview import store_preview
+from .tts import synthesize_fish_audio
 
 
 def _valid_url(value: str) -> bool:
@@ -234,6 +244,10 @@ class UniversalLLMAssistOptionsFlow(OptionsFlow):
     def __init__(self, entry: ConfigEntry) -> None:
         self._entry = entry
         self._models: list[str] = []
+        self._voices: list[dict[str, str]] = []
+        self._voice_language = "ru"
+        self._pending_voice: str | None = None
+        self._browser_preview_url: str | None = None
 
     @property
     def _settings(self) -> dict[str, Any]:
@@ -244,7 +258,12 @@ class UniversalLLMAssistOptionsFlow(OptionsFlow):
     ) -> ConfigFlowResult:
         return self.async_show_menu(
             step_id="init",
-            menu_options=["refresh_models", "manual_model", "connection", "fish_audio"],
+            menu_options=[
+                "refresh_models", "manual_model", "connection", "fish_audio",
+                "fish_voice_search",
+                "fish_voice_preview",
+                "fish_browser_preview",
+            ],
         )
 
     async def async_step_refresh_models(
@@ -337,6 +356,10 @@ class UniversalLLMAssistOptionsFlow(OptionsFlow):
                 CONF_FISH_VOICE: user_input.get(CONF_FISH_VOICE, "").strip(),
                 CONF_FISH_SPEED: user_input[CONF_FISH_SPEED],
                 CONF_FISH_LATENCY: user_input[CONF_FISH_LATENCY],
+                CONF_FISH_LANGUAGE: user_input[CONF_FISH_LANGUAGE].strip().lower().split("-")[0],
+                CONF_FISH_TEMPERATURE: user_input[CONF_FISH_TEMPERATURE],
+                CONF_FISH_TOP_P: user_input[CONF_FISH_TOP_P],
+                CONF_FISH_EMOTION: user_input[CONF_FISH_EMOTION],
             }
             if key := user_input.get(CONF_FISH_API_KEY, "").strip():
                 changes[CONF_FISH_API_KEY] = key
@@ -372,11 +395,45 @@ class UniversalLLMAssistOptionsFlow(OptionsFlow):
                         default=current.get(CONF_FISH_VOICE, ""),
                     ): TextSelector(TextSelectorConfig(type=TextSelectorType.TEXT)),
                     vol.Required(
+                        CONF_FISH_LANGUAGE,
+                        default=current.get(CONF_FISH_LANGUAGE, "ru"),
+                    ): TextSelector(TextSelectorConfig(type=TextSelectorType.TEXT)),
+                    vol.Required(
                         CONF_FISH_SPEED,
                         default=current.get(CONF_FISH_SPEED, 1.0),
                     ): NumberSelector(
                         NumberSelectorConfig(
                             min=0.5, max=2.0, step=0.1, mode=NumberSelectorMode.BOX
+                        )
+                    ),
+                    vol.Required(
+                        CONF_FISH_TEMPERATURE,
+                        default=current.get(CONF_FISH_TEMPERATURE, 0.7),
+                    ): NumberSelector(
+                        NumberSelectorConfig(
+                            min=0, max=1, step=0.05, mode=NumberSelectorMode.BOX
+                        )
+                    ),
+                    vol.Required(
+                        CONF_FISH_TOP_P,
+                        default=current.get(CONF_FISH_TOP_P, 0.7),
+                    ): NumberSelector(
+                        NumberSelectorConfig(
+                            min=0, max=1, step=0.05, mode=NumberSelectorMode.BOX
+                        )
+                    ),
+                    vol.Required(
+                        CONF_FISH_EMOTION,
+                        default=current.get(CONF_FISH_EMOTION, "none"),
+                    ): SelectSelector(
+                        SelectSelectorConfig(
+                            options=[
+                                SelectOptionDict(label=value, value=value)
+                                for value in (
+                                    "none", "calm", "confident", "happy",
+                                    "soft tone", "in a hurry tone",
+                                )
+                            ]
                         )
                     ),
                     vol.Required(
@@ -392,4 +449,183 @@ class UniversalLLMAssistOptionsFlow(OptionsFlow):
                     ),
                 }
             ),
+        )
+
+    async def async_step_fish_voice_search(
+        self, user_input: dict[str, Any] | None = None
+    ) -> ConfigFlowResult:
+        """Search the Fish Audio voice catalog with a language code."""
+        current = self._settings
+        errors: dict[str, str] = {}
+        if user_input is not None:
+            key = current.get(CONF_FISH_API_KEY)
+            if not key:
+                errors["base"] = "fish_key_required"
+            else:
+                try:
+                    self._voices = await fetch_voices(
+                        self.hass,
+                        key,
+                        user_input[CONF_FISH_LANGUAGE].strip(),
+                        user_input.get("fish_voice_title", "").strip(),
+                        int(user_input["fish_voice_page"]),
+                    )
+                except HomeAssistantError:
+                    errors["base"] = "cannot_load_voices"
+                else:
+                    if not self._voices:
+                        errors["base"] = "no_voices"
+                    else:
+                        self._voice_language = (
+                            user_input[CONF_FISH_LANGUAGE].strip().lower().split("-")[0]
+                        )
+                        return await self.async_step_fish_voice_results()
+        return self.async_show_form(
+            step_id="fish_voice_search",
+            data_schema=vol.Schema(
+                {
+                    vol.Required(
+                        CONF_FISH_LANGUAGE,
+                        default=(user_input or current).get(CONF_FISH_LANGUAGE, "ru"),
+                    ): TextSelector(TextSelectorConfig(type=TextSelectorType.TEXT)),
+                    vol.Optional(
+                        "fish_voice_title",
+                        default=(user_input or {}).get("fish_voice_title", ""),
+                    ): TextSelector(TextSelectorConfig(type=TextSelectorType.TEXT)),
+                    vol.Required(
+                        "fish_voice_page",
+                        default=(user_input or {}).get("fish_voice_page", 1),
+                    ): NumberSelector(
+                        NumberSelectorConfig(
+                            min=1, max=100, step=1, mode=NumberSelectorMode.BOX
+                        )
+                    ),
+                }
+            ),
+            errors=errors,
+        )
+
+    async def async_step_fish_voice_results(
+        self, user_input: dict[str, Any] | None = None
+    ) -> ConfigFlowResult:
+        """Save the selected Fish Audio voice ID."""
+        if user_input is not None:
+            selected = user_input[CONF_FISH_VOICE]
+            if selected not in {voice["id"] for voice in self._voices}:
+                return self.async_abort(reason="invalid_voice")
+            self._pending_voice = selected
+            return await self.async_step_fish_browser_preview()
+        return self.async_show_form(
+            step_id="fish_voice_results",
+            data_schema=vol.Schema(
+                {
+                    vol.Required(CONF_FISH_VOICE): SelectSelector(
+                        SelectSelectorConfig(
+                            options=[
+                                SelectOptionDict(
+                                    label=f"{voice['name']} ({voice['id'][:8]})",
+                                    value=voice["id"],
+                                )
+                                for voice in self._voices
+                            ]
+                        )
+                    )
+                }
+            ),
+        )
+
+    async def async_step_fish_browser_preview(
+        self, user_input: dict[str, Any] | None = None
+    ) -> ConfigFlowResult:
+        """Generate an MP3 for browser playback before saving a voice."""
+        errors: dict[str, str] = {}
+        if user_input is not None:
+            settings = self._settings
+            if not settings.get(CONF_FISH_API_KEY):
+                errors["base"] = "fish_key_required"
+            else:
+                try:
+                    audio = await synthesize_fish_audio(
+                        self.hass,
+                        settings,
+                        user_input["test_text"],
+                        voice_override=self._pending_voice,
+                    )
+                except HomeAssistantError:
+                    errors["base"] = "preview_failed"
+                else:
+                    self._browser_preview_url = store_preview(self.hass, audio)
+                    return await self.async_step_fish_browser_ready()
+        return self.async_show_form(
+            step_id="fish_browser_preview",
+            data_schema=vol.Schema(
+                {
+                    vol.Required(
+                        "test_text", default="Привет! Я готов помочь."
+                    ): TextSelector(TextSelectorConfig(type=TextSelectorType.TEXT))
+                }
+            ),
+            errors=errors,
+        )
+
+    async def async_step_fish_browser_ready(
+        self, user_input: dict[str, Any] | None = None
+    ) -> ConfigFlowResult:
+        """Show a browser playback link, then save the selected voice."""
+        if user_input is not None:
+            changes = {}
+            if self._pending_voice:
+                changes = {
+                    CONF_FISH_VOICE: self._pending_voice,
+                    CONF_FISH_LANGUAGE: self._voice_language,
+                }
+            return self.async_create_entry(
+                title="", data={**self._entry.options, **changes}
+            )
+        return self.async_show_form(
+            step_id="fish_browser_ready",
+            data_schema=vol.Schema({}),
+            description_placeholders={"preview_url": self._browser_preview_url or ""},
+        )
+
+    async def async_step_fish_voice_preview(
+        self, user_input: dict[str, Any] | None = None
+    ) -> ConfigFlowResult:
+        """Speak a test phrase on a chosen Home Assistant media player."""
+        errors: dict[str, str] = {}
+        tts_id = er.async_get(self.hass).async_get_entity_id(
+            "tts", DOMAIN, f"{self._entry.entry_id}_fish_audio"
+        )
+        if not tts_id:
+            errors["base"] = "fish_tts_required"
+        elif user_input is not None:
+            try:
+                await self.hass.services.async_call(
+                    "tts",
+                    "speak",
+                    {
+                        "entity_id": tts_id,
+                        "media_player_entity_id": user_input["media_player"],
+                        "message": user_input["test_text"],
+                        "cache": False,
+                    },
+                    blocking=True,
+                )
+            except HomeAssistantError:
+                errors["base"] = "preview_failed"
+            else:
+                return self.async_create_entry(title="", data=self._entry.options)
+        return self.async_show_form(
+            step_id="fish_voice_preview",
+            data_schema=vol.Schema(
+                {
+                    vol.Required("media_player"): EntitySelector(
+                        EntitySelectorConfig(domain="media_player")
+                    ),
+                    vol.Required(
+                        "test_text", default="Привет! Я готов помочь."
+                    ): TextSelector(TextSelectorConfig(type=TextSelectorType.TEXT)),
+                }
+            ),
+            errors=errors,
         )

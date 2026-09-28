@@ -32,15 +32,17 @@ Open the integration's settings later to refresh the model catalog, change the m
 ### Fish Audio speech
 
 1. Open this integration's **Configure** menu and choose **Configure Fish Audio speech**.
-2. Enter your [Fish Audio API key](https://fish.audio/app/api-keys). The default model is `s2.1-pro-free`. A voice model ID is optional; without one, Fish Audio uses its default voice.
-3. Set speech speed and latency as desired. **Balanced** is the default latency setting.
-4. Save, then select **Fish Audio** as the text-to-speech engine in the Assist pipeline. Your LLM conversation agent and speech-to-text engine remain separate selections.
+2. Enter your [Fish Audio API key](https://fish.audio/app/api-keys). The default model is `s2.1-pro-free`. Set the language code, for example `ru`.
+3. To choose a voice, reopen **Configure** and select **Find Fish Audio voice by language**. The integration calls Fish Audio's live voice catalog with the language filter; you can narrow by name and change the result page. Select a named voice, enter a test phrase, and use the browser playback link before saving. You can also paste a voice ID manually. With no voice ID, Fish Audio uses its default voice.
+4. Set speech speed, expressiveness (`temperature`), intonation variation (`top_p`), speaking style, and latency. The speaking style is sent as an emotion cue in the TTS text; `none` leaves it neutral. **Balanced** is the default latency setting.
+5. To hear the saved voice later, choose **Listen to voice in browser** in **Configure**. The integration generates a short MP3 and shows a five-minute playback link that opens in a new browser tab while the Home Assistant settings stay open. You can also choose **Listen to a test phrase** and select a Home Assistant media player for speaker playback.
+6. Select **Fish Audio** as the text-to-speech engine in the Assist pipeline. Your LLM conversation agent and speech-to-text engine remain separate selections.
 
 The Fish Audio key is saved only in the Home Assistant config entry. The integration sends the final assistant reply to Fish Audio and returns an MP3 to Home Assistant. Fish Audio's free model is intended for testing and has no latency guarantee; see the [official model overview](https://docs.fish.audio/overview/capabilities).
 
 ### Updates
 
-The integration creates a **Universal LLM Assist** update entity. It checks GitHub releases every six hours. Install a new version from Home Assistant's update panel, or enable **Install new releases automatically** in the model settings to download and install updates as they appear. Installation keeps a backup of the previous component directory and restarts Home Assistant. Existing v0.1.0 manual installations need one manual upgrade to v0.2.0 before this update entity becomes available.
+The integration creates a **Universal LLM Assist** update entity. It checks GitHub releases every six hours. Install a new version from Home Assistant's update panel, or enable **Install new releases automatically** in the model settings to download and install updates as they appear. Installation keeps a backup of the previous component directory and restarts Home Assistant. Existing v0.1.0 manual installations need one manual upgrade to v0.2.1 before this update entity becomes available.
 
 **Ollama Cloud:** Use an [Ollama API key](https://ollama.com/settings/keys), not a local Ollama sign-in. The integration connects directly to `https://ollama.com/v1`. For this API, model names are those returned by the cloud API, for example `gemma4:31b`; CLI names ending in `:cloud` are different.
 

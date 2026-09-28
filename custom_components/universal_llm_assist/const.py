@@ -1,7 +1,7 @@
 """Constants for Universal LLM Assist."""
 
 DOMAIN = "universal_llm_assist"
-VERSION = "0.2.0"
+VERSION = "0.2.1"
 
 CONF_PROVIDER = "provider"
 CONF_BASE_URL = "base_url"
@@ -16,6 +16,10 @@ CONF_FISH_MODEL = "fish_model"
 CONF_FISH_VOICE = "fish_voice"
 CONF_FISH_SPEED = "fish_speed"
 CONF_FISH_LATENCY = "fish_latency"
+CONF_FISH_LANGUAGE = "fish_language"
+CONF_FISH_TEMPERATURE = "fish_temperature"
+CONF_FISH_TOP_P = "fish_top_p"
+CONF_FISH_EMOTION = "fish_emotion"
 
 DEFAULT_MAX_TOKENS = 1024
 
