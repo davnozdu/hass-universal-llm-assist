@@ -14,6 +14,7 @@ from homeassistant.helpers import llm
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 
 from .errors import provider_error_detail
+from .numbers import integer_token_limit
 
 
 async def fetch_models(hass, provider: str, base_url: str, api_key: str) -> list[str]:
@@ -171,8 +172,9 @@ def _generation_options(
     max_tokens: int,
 ) -> dict[str, Any]:
     """Map common controls to each provider's supported request fields."""
+    token_limit = integer_token_limit(max_tokens)
     options: dict[str, Any] = {
-        "max_completion_tokens" if provider == "groq" else "max_tokens": max_tokens
+        "max_completion_tokens" if provider == "groq" else "max_tokens": token_limit
     }
     if not (provider == "deepseek" and thinking):
         options["temperature"] = temperature

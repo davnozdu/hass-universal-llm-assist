@@ -1,7 +1,7 @@
 """Constants for Universal LLM Assist."""
 
 DOMAIN = "universal_llm_assist"
-VERSION = "0.2.3"
+VERSION = "0.2.4"
 
 CONF_PROVIDER = "provider"
 CONF_BASE_URL = "base_url"
