@@ -23,6 +23,7 @@ from .const import (
     DEFAULT_PROMPT,
     DOMAIN,
 )
+from .settings import merged_settings
 
 MAX_TOOL_ITERATIONS = 8
 
@@ -65,7 +66,7 @@ class UniversalLLMConversation(
         user_input: conversation.ConversationInput,
         chat_log: conversation.ChatLog,
     ) -> conversation.ConversationResult:
-        settings = {**self.entry.data, **self.entry.options}
+        settings = merged_settings(self.entry.data, self.entry.options)
         try:
             await chat_log.async_provide_llm_data(
                 user_input.as_llm_context(DOMAIN),

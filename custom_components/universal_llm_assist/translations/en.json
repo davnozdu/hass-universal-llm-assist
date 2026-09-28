@@ -110,7 +110,7 @@
           "fish_api_key": "Fish Audio API key (optional)",
           "fish_model": "Speech model",
           "fish_voice": "Voice model ID (optional)",
-          "fish_speed": "Speech speed",
+          "fish_speed": "Speech speed (0.5–2; point or comma)",
           "fish_latency": "Latency / quality",
           "fish_language": "Language code (for example, ru)",
           "fish_temperature": "Expressiveness (0–1)",
@@ -162,7 +162,8 @@
       "cannot_load_voices": "Could not load Fish Audio voices. Check the key and try again.",
       "no_voices": "No voices found. Change the language, name, or page.",
       "fish_tts_required": "Save a Fish Audio key first and wait for the TTS entity to appear.",
-      "preview_failed": "Could not play the test phrase. Check Fish Audio and the media player."
+      "preview_failed": "Could not play the test phrase. Check Fish Audio and the media player.",
+      "invalid_speed": "Enter a speed from 0.5 to 2. A point or comma is accepted."
     },
     "abort": {
       "invalid_voice": "Invalid voice."

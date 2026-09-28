@@ -50,7 +50,9 @@ from .const import (
     PROVIDERS,
 )
 from .fish import fetch_voices
+from .numbers import parse_fish_speed
 from .preview import store_preview
+from .settings import merged_settings
 from .tts import synthesize_fish_audio
 
 
@@ -252,7 +254,7 @@ class UniversalLLMAssistOptionsFlow(OptionsFlow):
 
     @property
     def _settings(self) -> dict[str, Any]:
-        return {**self._entry.data, **self._entry.options}
+        return merged_settings(self._entry.data, self._entry.options)
 
     async def async_step_init(
         self, user_input: dict[str, Any] | None = None
@@ -368,45 +370,67 @@ class UniversalLLMAssistOptionsFlow(OptionsFlow):
         errors: dict[str, str] = {}
         current = self._settings
         if user_input is not None:
-            changes = {
-                CONF_FISH_MODEL: user_input[CONF_FISH_MODEL].strip(),
-                CONF_FISH_VOICE: user_input.get(CONF_FISH_VOICE, "").strip(),
-                CONF_FISH_SPEED: user_input[CONF_FISH_SPEED],
-                CONF_FISH_LATENCY: user_input[CONF_FISH_LATENCY],
-                CONF_FISH_LANGUAGE: user_input[CONF_FISH_LANGUAGE].strip().lower().split("-")[0],
-                CONF_FISH_TEMPERATURE: user_input[CONF_FISH_TEMPERATURE],
-                CONF_FISH_TOP_P: user_input[CONF_FISH_TOP_P],
-                CONF_FISH_EMOTION: user_input[CONF_FISH_EMOTION],
-            }
-            if key := user_input.get(CONF_FISH_API_KEY, "").strip():
-                changes[CONF_FISH_API_KEY] = key
-            if user_input.get("fish_load_voices"):
-                lookup = {**current, **changes}
-                if not lookup.get(CONF_FISH_API_KEY):
-                    errors["base"] = "fish_key_required"
-                else:
-                    try:
-                        self._voices = await fetch_voices(
-                            self.hass,
-                            lookup[CONF_FISH_API_KEY],
-                            changes[CONF_FISH_LANGUAGE],
-                            "",
-                            1,
-                        )
-                    except HomeAssistantError:
-                        errors["base"] = "cannot_load_voices"
-                    else:
-                        if not self._voices:
-                            errors["base"] = "no_voices"
-                        else:
-                            self._pending_fish_settings = changes
-                            self._voice_language = changes[CONF_FISH_LANGUAGE]
-                            return await self.async_step_fish_voice_results()
+            try:
+                speed = parse_fish_speed(user_input[CONF_FISH_SPEED])
+            except ValueError:
+                errors[CONF_FISH_SPEED] = "invalid_speed"
+                speed = None
+            if speed is not None:
+                return await self._async_save_fish_audio(user_input, speed, errors)
+        return self._show_fish_audio_form(user_input, current, errors)
+
+    async def _async_save_fish_audio(
+        self, user_input: dict[str, Any], speed: float, errors: dict[str, str]
+    ) -> ConfigFlowResult:
+        """Save Fish settings or continue to the live voice catalog."""
+        current = self._settings
+        changes = {
+            CONF_FISH_MODEL: user_input[CONF_FISH_MODEL].strip(),
+            CONF_FISH_VOICE: user_input.get(CONF_FISH_VOICE, "").strip(),
+            CONF_FISH_SPEED: speed,
+            CONF_FISH_LATENCY: user_input[CONF_FISH_LATENCY],
+            CONF_FISH_LANGUAGE: user_input[CONF_FISH_LANGUAGE].strip().lower().split("-")[0],
+            CONF_FISH_TEMPERATURE: user_input[CONF_FISH_TEMPERATURE],
+            CONF_FISH_TOP_P: user_input[CONF_FISH_TOP_P],
+            CONF_FISH_EMOTION: user_input[CONF_FISH_EMOTION],
+        }
+        if key := user_input.get(CONF_FISH_API_KEY, "").strip():
+            changes[CONF_FISH_API_KEY] = key
+        if user_input.get("fish_load_voices"):
+            lookup = {**current, **changes}
+            if not lookup.get(CONF_FISH_API_KEY):
+                errors["base"] = "fish_key_required"
             else:
-                return self.async_create_entry(
-                    title="", data={**self._entry.options, **changes}
-                )
-            current = {**current, **changes}
+                try:
+                    self._voices = await fetch_voices(
+                        self.hass,
+                        lookup[CONF_FISH_API_KEY],
+                        changes[CONF_FISH_LANGUAGE],
+                        "",
+                        1,
+                    )
+                except HomeAssistantError:
+                    errors["base"] = "cannot_load_voices"
+                else:
+                    if not self._voices:
+                        errors["base"] = "no_voices"
+                    else:
+                        self._pending_fish_settings = changes
+                        self._voice_language = changes[CONF_FISH_LANGUAGE]
+                        return await self.async_step_fish_voice_results()
+        else:
+            return self.async_create_entry(
+                title="", data={**self._entry.options, **changes}
+            )
+        return self._show_fish_audio_form(user_input, {**current, **changes}, errors)
+
+    def _show_fish_audio_form(
+        self,
+        user_input: dict[str, Any] | None,
+        current: dict[str, Any],
+        errors: dict[str, str],
+    ) -> ConfigFlowResult:
+        """Show Fish settings with a locale-friendly speech speed field."""
         return self.async_show_form(
             step_id="fish_audio",
             data_schema=vol.Schema(
@@ -444,12 +468,12 @@ class UniversalLLMAssistOptionsFlow(OptionsFlow):
                     ): BooleanSelector(),
                     vol.Required(
                         CONF_FISH_SPEED,
-                        default=current.get(CONF_FISH_SPEED, 1.0),
-                    ): NumberSelector(
-                        NumberSelectorConfig(
-                            min=0.5, max=2.0, step=0.1, mode=NumberSelectorMode.BOX
-                        )
-                    ),
+                        default=str(
+                            (user_input or {}).get(
+                                CONF_FISH_SPEED, current.get(CONF_FISH_SPEED, 1.0)
+                            )
+                        ),
+                    ): TextSelector(TextSelectorConfig(type=TextSelectorType.TEXT)),
                     vol.Required(
                         CONF_FISH_TEMPERATURE,
                         default=current.get(CONF_FISH_TEMPERATURE, 0.7),

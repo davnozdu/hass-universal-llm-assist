@@ -36,11 +36,13 @@ Open the integration's settings later to refresh the model catalog, change the m
 1. Open this integration's **Configure** menu and choose **Configure Fish Audio speech**.
 2. Enter your [Fish Audio API key](https://fish.audio/app/api-keys). The default model is `s2.1-pro-free`. Set the language code, for example `ru`. The settings menu shows whether the Fish Audio and selected LLM provider keys are saved; it never shows their values.
 3. To choose a voice, turn on **Load voices for selected language** in the Fish Audio settings and submit. The integration calls Fish Audio's live voice catalog with the language filter. Select a named voice, enter a test phrase, and use the browser playback link before saving. The separate **Find Fish Audio voice by language** menu offers a name filter and result pages. You can also paste a voice ID manually. With no voice ID, Fish Audio uses its default voice.
-4. Set speech speed, expressiveness (`temperature`), intonation variation (`top_p`), speaking style, and latency. The speaking style is sent as an emotion cue in the TTS text; `none` leaves it neutral. **Balanced** is the default latency setting.
+4. Set speech speed, expressiveness (`temperature`), intonation variation (`top_p`), speaking style, and latency. Speech speed accepts `1.2` and `1,2` equally (range 0.5–2). The speaking style is sent as an emotion cue in the TTS text; `none` leaves it neutral. **Balanced** is the default latency setting.
 5. To hear the saved voice later, choose **Listen to voice in browser** in **Configure**. The integration generates a short MP3 and shows a five-minute playback link. Open it in a new tab to keep the Home Assistant settings open. You can also choose **Listen to a test phrase** and select a Home Assistant media player for speaker playback.
 6. Select **Fish Audio** as the text-to-speech engine in the Assist pipeline. Your LLM conversation agent and speech-to-text engine remain separate selections.
 
 The Fish Audio key is saved only in the Home Assistant config entry. The integration sends the final assistant reply to Fish Audio and returns an MP3 to Home Assistant. Fish Audio's free model is intended for testing and has no latency guarantee; see the [official model overview](https://docs.fish.audio/overview/capabilities).
+
+API keys are stored in Home Assistant's config entries, outside the integration code directory. Replacing the code during an update does not remove those entries. Empty optional key fields leave existing saved keys in place.
 
 ### Updates
 

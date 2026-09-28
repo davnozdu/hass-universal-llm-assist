@@ -24,6 +24,7 @@ from .const import (
     CONF_FISH_TOP_P,
     CONF_FISH_VOICE,
 )
+from .settings import merged_settings
 
 LOGGER = logging.getLogger(__name__)
 FISH_TTS_URL = "https://api.fish.audio/v1/tts"
@@ -36,7 +37,7 @@ async def async_setup_entry(
     async_add_entities: AddConfigEntryEntitiesCallback,
 ) -> None:
     """Add Fish Audio only after its key has been configured."""
-    settings = {**entry.data, **entry.options}
+    settings = merged_settings(entry.data, entry.options)
     if settings.get(CONF_FISH_API_KEY):
         async_add_entities([FishAudioTTS(entry, settings)])
 
