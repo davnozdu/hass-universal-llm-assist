@@ -13,6 +13,8 @@ from homeassistant.exceptions import HomeAssistantError
 from homeassistant.helpers import llm
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 
+from .errors import provider_error_detail
+
 
 async def fetch_models(hass, provider: str, base_url: str, api_key: str) -> list[str]:
     """Fetch model IDs from a provider's current catalog."""
@@ -136,10 +138,11 @@ async def request_completion(
                 headers=headers,
             ) as response:
                 if response.status >= 400:
-                    # The server's error may contain user input. Keep it out of logs.
+                    # Only surface the provider's short message after redacting the key.
+                    detail = provider_error_detail(await response.text(), api_key)
                     raise HomeAssistantError(
                         f"LLM provider returned HTTP {response.status}. "
-                        "Check the API key, model name, and provider URL."
+                        + (detail or "Check the API key, model name, and provider URL.")
                     )
                 result = await response.json()
     except (aiohttp.ClientError, TimeoutError) as err:
