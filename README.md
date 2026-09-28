@@ -18,6 +18,8 @@ Add this GitHub repository as a custom repository of type **Integration** in HAC
 
 Download `universal_llm_assist.zip` from a release and extract it into your Home Assistant `config` directory. The result must be `config/custom_components/universal_llm_assist/manifest.json`. Restart Home Assistant.
 
+If making a manual backup, keep it **outside** `config/custom_components`. A folder such as `custom_components/universal_llm_assist.backup-...` can be mistaken for an integration by Home Assistant. For example, from `config`: `cp -a custom_components/universal_llm_assist universal_llm_assist-backup`.
+
 ## Configure
 
 1. Open **Settings → Devices & services → Add integration → Universal LLM Assist**.
