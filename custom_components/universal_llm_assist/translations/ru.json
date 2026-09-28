@@ -1,0 +1,27 @@
+{
+  "title": "Универсальный LLM-ассистент",
+  "config": {
+    "step": {
+      "user": {
+        "title": "Подключение LLM",
+        "description": "Выберите провайдера и введите API-ключ. Оставьте URL пустым для официального адреса.",
+        "data": {"provider": "Провайдер", "name": "Название ассистента", "api_key": "API-ключ", "base_url": "Другой базовый URL (необязательно)"}
+      },
+      "model_menu": {"title": "Выбор модели", "menu_options": {"refresh_models": "Считать актуальные модели", "manual_model": "Ввести модель вручную"}},
+      "refresh_models": {"title": "Повторить загрузку моделей"},
+      "models": {"title": "Выберите модель", "data": {"model": "Модель", "control_home_assistant": "Разрешить управление Home Assistant", "prompt": "Инструкции ассистенту"}},
+      "manual_model": {"title": "Введите модель", "data": {"model": "Идентификатор модели", "control_home_assistant": "Разрешить управление Home Assistant", "prompt": "Инструкции ассистенту"}}
+    },
+    "error": {"invalid_url": "Введите корректный HTTP или HTTPS URL.", "required": "Обязательное поле.", "cannot_load_models": "Не удалось получить модели. Проверьте ключ и URL, затем повторите попытку или введите модель вручную."}
+  },
+  "options": {
+    "step": {
+      "init": {"title": "Настройки LLM-ассистента", "menu_options": {"refresh_models": "Считать актуальные модели", "manual_model": "Изменить модель вручную", "connection": "Изменить ключ или URL"}},
+      "refresh_models": {"title": "Повторить загрузку моделей"},
+      "models": {"title": "Выберите модель", "data": {"model": "Модель", "control_home_assistant": "Разрешить управление Home Assistant", "prompt": "Инструкции ассистенту"}},
+      "manual_model": {"title": "Изменить модель", "data": {"model": "Идентификатор модели", "control_home_assistant": "Разрешить управление Home Assistant", "prompt": "Инструкции ассистенту"}},
+      "connection": {"title": "Подключение к API", "description": "Оставьте API-ключ пустым, чтобы сохранить прежний.", "data": {"base_url": "Базовый URL", "api_key": "Новый API-ключ (необязательно)"}}
+    },
+    "error": {"invalid_url": "Введите корректный HTTP или HTTPS URL.", "required": "Обязательное поле.", "cannot_load_models": "Не удалось получить модели. Проверьте ключ и URL, затем повторите попытку или введите модель вручную."}
+  }
+}

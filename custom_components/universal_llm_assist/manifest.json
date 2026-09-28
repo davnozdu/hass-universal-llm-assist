@@ -1,0 +1,12 @@
+{
+  "domain": "universal_llm_assist",
+  "name": "Universal LLM Assist",
+  "codeowners": [],
+  "config_flow": true,
+  "dependencies": ["conversation", "llm"],
+  "documentation": "https://github.com/davnozdu/hass-universal-llm-assist",
+  "integration_type": "service",
+  "iot_class": "cloud_push",
+  "requirements": [],
+  "version": "0.1.0"
+}
